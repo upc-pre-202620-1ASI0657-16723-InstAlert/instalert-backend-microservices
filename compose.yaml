@@ -1,63 +1,199 @@
+name: instalert-sprint2
+
+x-mysql-health: &mysql-health
+  test: [CMD-SHELL, 'MYSQL_PWD="$$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u"$$MYSQL_USER" -D "$$MYSQL_DATABASE" -e "SELECT 1" >/dev/null 2>&1']
+  interval: 5s
+  timeout: 5s
+  start_period: 30s
+  retries: 40
+
+x-java-env: &java-env
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=65 -XX:+ExitOnOutOfMemoryError
+  TZ: UTC
+
 services:
   account-db:
     image: mysql:8.4
     environment:
       MYSQL_DATABASE: instalert_account
       MYSQL_USER: account_app
-      MYSQL_PASSWORD: ${ACCOUNT_DB_PASSWORD:?Set ACCOUNT_DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${ACCOUNT_DB_ROOT_PASSWORD:?Set ACCOUNT_DB_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${ACCOUNT_DB_PASSWORD:?Initialize .env.docker first}
+      MYSQL_ROOT_PASSWORD: ${ACCOUNT_DB_ROOT_PASSWORD:?Initialize .env.docker first}
     volumes: [account-data:/var/lib/mysql]
-    healthcheck:
-      test: [CMD-SHELL, 'mysqladmin ping -h localhost --silent']
-      interval: 5s
-      timeout: 3s
-      retries: 30
+    healthcheck: *mysql-health
+    restart: unless-stopped
+
+  emergencies-db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: instalert_emergencies
+      MYSQL_USER: emergencies_app
+      MYSQL_PASSWORD: ${EMERGENCIES_DB_PASSWORD:?Initialize .env.docker first}
+      MYSQL_ROOT_PASSWORD: ${EMERGENCIES_DB_ROOT_PASSWORD:?Initialize .env.docker first}
+    volumes: [emergencies-data:/var/lib/mysql]
+    healthcheck: *mysql-health
+    restart: unless-stopped
+
   monolith-db:
+    profiles: [legacy]
     image: mysql:8.4
     environment:
       MYSQL_DATABASE: instalert_db
       MYSQL_USER: monolith_app
-      MYSQL_PASSWORD: ${MONOLITH_DB_PASSWORD:?Set MONOLITH_DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MONOLITH_DB_ROOT_PASSWORD:?Set MONOLITH_DB_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MONOLITH_DB_PASSWORD:?Initialize .env.docker first}
+      MYSQL_ROOT_PASSWORD: ${MONOLITH_DB_ROOT_PASSWORD:?Initialize .env.docker first}
     volumes:
       - monolith-data:/var/lib/mysql
       - ./infrastructure/bootstrap-monolith.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
-    healthcheck:
-      test: [CMD-SHELL, 'mysqladmin ping -h localhost --silent']
-      interval: 5s
-      timeout: 3s
-      retries: 30
+      - ./src/main/resources/community-notifications.sql:/docker-entrypoint-initdb.d/002-notifications.sql:ro
+      - ./infrastructure/docker-monolith-permissions.sql:/docker-entrypoint-initdb.d/003-permissions.sql:ro
+    healthcheck: *mysql-health
+    restart: unless-stopped
+
   ms-account:
+    image: instalert/account:sprint3-local
     build: {context: ., dockerfile: services/ms-account/Dockerfile}
     environment:
-      ACCOUNT_DB_URL: jdbc:mysql://account-db:3306/instalert_account
+      <<: *java-env
+      ACCOUNT_DB_URL: jdbc:mysql://account-db:3306/instalert_account?allowPublicKeyRetrieval=true&useSSL=false&connectionTimeZone=UTC
       ACCOUNT_DB_USER: account_app
       ACCOUNT_DB_PASSWORD: ${ACCOUNT_DB_PASSWORD}
-      ACCOUNT_JWT_SECRET: ${ACCOUNT_JWT_SECRET:?Set a Base64 key with at least 32 random bytes}
-      ACCOUNT_CORS_ORIGINS: http://localhost:4200
+      ACCOUNT_JWT_SECRET: ${ACCOUNT_JWT_SECRET:?Initialize .env.docker first}
+      ACCOUNT_CORS_ORIGINS: http://localhost:${FRONTEND_DOCKER_PORT:-4201},http://localhost:${GATEWAY_DOCKER_PORT:-8085}
+    mem_limit: 640m
     depends_on:
       account-db: {condition: service_healthy}
+    restart: unless-stopped
+
+  ms-emergencies:
+    image: instalert/emergencies:sprint3-local
+    build: {context: ., dockerfile: services/ms-emergencies/Dockerfile}
+    environment:
+      <<: *java-env
+      EMERGENCIES_DB_URL: jdbc:mysql://emergencies-db:3306/instalert_emergencies?allowPublicKeyRetrieval=true&useSSL=false&connectionTimeZone=UTC
+      EMERGENCIES_DB_USER: emergencies_app
+      EMERGENCIES_DB_PASSWORD: ${EMERGENCIES_DB_PASSWORD}
+      ACCOUNT_SERVICE_URL: http://ms-account:8081
+      COMMUNITIES_SERVICE_URL: http://ms-communities:8086
+      NOTIFICATIONS_INTERNAL_KEY: ${NOTIFICATIONS_INTERNAL_KEY:?Initialize .env.docker first}
+      NOTIFICATIONS_WORKER_ENABLED: 'true'
+      EMERGENCIES_CORS_ORIGINS: http://localhost:${FRONTEND_DOCKER_PORT:-4201}
+    mem_limit: 640m
+    depends_on:
+      emergencies-db: {condition: service_healthy}
+      ms-account: {condition: service_healthy}
+      ms-communities: {condition: service_healthy}
+    restart: unless-stopped
+
   monolith:
+    profiles: [legacy]
+    image: instalert/monolith:sprint3-local
     build: {context: ., dockerfile: Dockerfile}
     environment:
-      MONOLITH_DB_URL: jdbc:mysql://monolith-db:3306/instalert_db
+      <<: *java-env
+      MONOLITH_DB_URL: jdbc:mysql://monolith-db:3306/instalert_db?allowPublicKeyRetrieval=true&useSSL=false&connectionTimeZone=UTC
       MONOLITH_DB_USER: monolith_app
       MONOLITH_DB_PASSWORD: ${MONOLITH_DB_PASSWORD}
       ACCOUNT_SERVICE_URL: http://ms-account:8081
+      NOTIFICATIONS_INTERNAL_KEY: ${NOTIFICATIONS_INTERNAL_KEY}
+      MONOLITH_CORS_ORIGINS: http://localhost:${FRONTEND_DOCKER_PORT:-4201}
+    mem_limit: 640m
     depends_on:
       monolith-db: {condition: service_healthy}
-      ms-account: {condition: service_started}
-  api-gateway:
-    build: {context: ., dockerfile: services/api-gateway/Dockerfile}
-    ports: [127.0.0.1:8080:8080]
+      ms-account: {condition: service_healthy}
+    restart: unless-stopped
+
+  incidents-db:
+    image: mysql:8.4
     environment:
+      MYSQL_DATABASE: instalert_incidents
+      MYSQL_USER: incidents_app
+      MYSQL_PASSWORD: ${INCIDENTS_DB_PASSWORD:?Initialize .env.docker first}
+      MYSQL_ROOT_PASSWORD: ${INCIDENTS_DB_ROOT_PASSWORD:?Initialize .env.docker first}
+    volumes: [incidents-data:/var/lib/mysql]
+    healthcheck: *mysql-health
+    restart: unless-stopped
+
+  ms-incidents:
+    image: instalert/incidents:sprint3-local
+    build: {context: ., dockerfile: services/ms-incidents/Dockerfile}
+    environment:
+      <<: *java-env
+      INCIDENTS_DB_URL: jdbc:mysql://incidents-db:3306/instalert_incidents?allowPublicKeyRetrieval=true&useSSL=false&connectionTimeZone=UTC
+      INCIDENTS_DB_USER: incidents_app
+      INCIDENTS_DB_PASSWORD: ${INCIDENTS_DB_PASSWORD}
       ACCOUNT_SERVICE_URL: http://ms-account:8081
-      MONOLITH_SERVICE_URL: http://monolith:8082
-    depends_on: [ms-account, monolith]
+      EMERGENCIES_SERVICE_URL: http://ms-emergencies:8083
+      NOTIFICATIONS_INTERNAL_KEY: ${NOTIFICATIONS_INTERNAL_KEY}
+      INCIDENTS_CORS_ORIGINS: http://localhost:${FRONTEND_DOCKER_PORT:-4201}
+      INCIDENTS_EVIDENCE_PATH: /app/evidence
+    volumes: [incident-evidence:/app/evidence]
+    mem_limit: 512m
+    depends_on:
+      incidents-db: {condition: service_healthy}
+      ms-account: {condition: service_healthy}
+    restart: unless-stopped
+
+  communities-db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: instalert_communities
+      MYSQL_USER: communities_app
+      MYSQL_PASSWORD: ${COMMUNITIES_DB_PASSWORD:?Initialize .env.docker first}
+      MYSQL_ROOT_PASSWORD: ${COMMUNITIES_DB_ROOT_PASSWORD:?Initialize .env.docker first}
+    volumes: [communities-data:/var/lib/mysql]
+    healthcheck: *mysql-health
+    restart: unless-stopped
+
+  ms-communities:
+    image: instalert/communities:sprint3-local
+    build: {context: ., dockerfile: services/ms-communities/Dockerfile}
+    environment:
+      <<: *java-env
+      COMMUNITIES_DB_URL: jdbc:mysql://communities-db:3306/instalert_communities?allowPublicKeyRetrieval=true&useSSL=false&connectionTimeZone=UTC
+      COMMUNITIES_DB_USER: communities_app
+      COMMUNITIES_DB_PASSWORD: ${COMMUNITIES_DB_PASSWORD}
+      ACCOUNT_SERVICE_URL: http://ms-account:8081
+      EMERGENCIES_SERVICE_URL: http://ms-emergencies:8083
+      NOTIFICATIONS_INTERNAL_KEY: ${NOTIFICATIONS_INTERNAL_KEY}
+      COMMUNITIES_CORS_ORIGINS: http://localhost:${FRONTEND_DOCKER_PORT:-4201}
+    mem_limit: 512m
+    depends_on:
+      communities-db: {condition: service_healthy}
+      ms-account: {condition: service_healthy}
+    restart: unless-stopped
+
+  api-gateway:
+    image: instalert/gateway:sprint3-local
+    build: {context: ., dockerfile: services/api-gateway/Dockerfile}
+    ports: ['127.0.0.1:${GATEWAY_DOCKER_PORT:-8085}:8080']
+    environment:
+      <<: *java-env
+      ACCOUNT_SERVICE_URL: http://ms-account:8081
+      INCIDENTS_SERVICE_URL: http://ms-incidents:8084
+      COMMUNITIES_SERVICE_URL: http://ms-communities:8086
+      EMERGENCIES_SERVICE_URL: http://ms-emergencies:8083
+      GATEWAY_CORS_ORIGINS: http://localhost:${FRONTEND_DOCKER_PORT:-4201}
+    mem_limit: 384m
+    depends_on:
+      ms-account: {condition: service_healthy}
+      ms-emergencies: {condition: service_healthy}
+      ms-incidents: {condition: service_healthy}
+      ms-communities: {condition: service_healthy}
+    restart: unless-stopped
+
   frontend:
-    build: {context: ../../Instalert-FrontEnd-main/Instalert-FrontEnd-main}
-    ports: [127.0.0.1:4200:80]
-    depends_on: [api-gateway]
+    image: instalert/frontend:sprint3-local
+    build: {context: "${FRONTEND_BUILD_CONTEXT:-../../Instalert-FrontEnd-main/Instalert-FrontEnd-main}"}
+    ports: ['127.0.0.1:${FRONTEND_DOCKER_PORT:-4201}:80']
+    depends_on:
+      api-gateway: {condition: service_healthy}
+    restart: unless-stopped
+
 volumes:
   account-data:
+  emergencies-data:
   monolith-data:
+  incidents-data:
+  communities-data:
+  incident-evidence:
