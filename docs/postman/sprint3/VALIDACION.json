@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-11-14T09:40:19.706414+00:00",
+  "target": "http://localhost:8085/api/v1",
+  "runner": "Postman CLI 1.83.1",
+  "mode": "real Docker + MySQL, no cloud reporting",
+  "requests": 55,
+  "assertions": 78,
+  "failed": 0,
+  "exitCode": 0,
+  "groups": {
+    "preparation": 3,
+    "incidents": 16,
+    "communities": 36
+  }
+}
