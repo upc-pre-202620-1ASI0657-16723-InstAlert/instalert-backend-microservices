@@ -12,7 +12,8 @@ New-Item -ItemType Directory -Force -Path $logRoot | Out-Null
 $services = @(
     @{Name='account';Port=8081;Jar='services/ms-account/target/ms-account-1.0.0-SNAPSHOT.jar'},
     @{Name='emergencies';Port=8083;Jar='services/ms-emergencies/target/ms-emergencies-1.0.0-SNAPSHOT.jar'},
-    @{Name='monolith';Port=8082;Jar='target/instalert-backend-0.0.1-SNAPSHOT.jar'},
+    @{Name='incidents';Port=8084;Jar='services/ms-incidents/target/ms-incidents-1.0.0-SNAPSHOT.jar'},
+    @{Name='communities';Port=8086;Jar='services/ms-communities/target/ms-communities-1.0.0-SNAPSHOT.jar'},
     @{Name='gateway';Port=8080;Jar='services/api-gateway/target/api-gateway-1.0.0-SNAPSHOT.jar'}
 )
 foreach ($service in $services) {

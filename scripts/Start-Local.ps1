@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory)][ValidateSet('Account','Monolith','Gateway','Emergencies')][string]$Service
+    [Parameter(Mandatory)][ValidateSet('Account','Monolith','Gateway','Emergencies','Incidents','Communities')][string]$Service
 )
 $ErrorActionPreference = 'Stop'
 $backendRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
@@ -18,6 +18,8 @@ if (!$env:JAVA_HOME -or !(Test-Path -LiteralPath (Join-Path $env:JAVA_HOME 'bin/
 Push-Location $backendRoot
 try {
     switch ($Service) {
+        'Incidents' { & ./mvnw.cmd -f services/ms-incidents/pom.xml spring-boot:run }
+        'Communities' { & ./mvnw.cmd -f services/ms-communities/pom.xml spring-boot:run }
         'Emergencies' { & ./mvnw.cmd -f services/ms-emergencies/pom.xml spring-boot:run }
         'Account' { & ./mvnw.cmd -f services/ms-account/pom.xml spring-boot:run }
         'Monolith' { & ./mvnw.cmd spring-boot:run }
