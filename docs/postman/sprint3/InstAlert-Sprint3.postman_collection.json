@@ -1,0 +1,2231 @@
+{
+  "info": {
+    "_postman_id": "6eb76721-ec5a-5c2c-91da-77847f1df025",
+    "name": "InstAlert Sprint 3 - Incidents y Communities",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Evidencias locales del Sprint 3. Ejecutar Preparacion, Incidents y Communities en orden. Variables y tokens se encadenan automáticamente; no exportar valores de sesión. Base Docker Gateway localhost:8085/api/v1. Solo se crean y eliminan fixtures sintéticos. Ver GUIA_CAPTURAS.md."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8085/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "runId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenA",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenB",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenC",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountA",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountB",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountC",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "referenceA",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "referenceB",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "referenceC",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "incidentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "evidenceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "communityId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "privateCommunityId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "supportId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "contactId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rejectedContactId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "grantId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "alertId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "noticeId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.variables.set(\"nowIso\",new Date().toISOString());",
+          "pm.variables.set(\"grantExpires\",new Date(Date.now()+3600000).toISOString());"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Preparacion (ejecutar primero)",
+      "description": "Crea tres cuentas sinteticas nuevas. A: propietario; B: contacto/miembro; C: tercero. No usar cuentas personales. Repetir esta carpeta reinicia los datos de prueba para otra sesión de capturas.",
+      "item": [
+        {
+          "name": "P01 Registrar usuario A",
+          "id": "8daffa86-a207-5819-9d94-48118d672025",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{baseUrl}}/authentication/sign-up",
+            "description": "Registrar cuenta de prueba A; el token y sus identificadores se guardan automáticamente. No fotografiar la respuesta de registro porque incluye el JWT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sprint 3 Usuario A\",\n  \"email\": \"sprint3.a.{{runId}}@example.com\",\n  \"password\": \"Sprint3Local2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"runId\",Date.now().toString()+Math.floor(Math.random()*10000));",
+                  "pm.collectionVariables.unset(\"incidentId\");",
+                  "pm.collectionVariables.unset(\"evidenceId\");",
+                  "pm.collectionVariables.unset(\"communityId\");",
+                  "pm.collectionVariables.unset(\"privateCommunityId\");",
+                  "pm.collectionVariables.unset(\"supportId\");",
+                  "pm.collectionVariables.unset(\"contactId\");",
+                  "pm.collectionVariables.unset(\"rejectedContactId\");",
+                  "pm.collectionVariables.unset(\"grantId\");",
+                  "pm.collectionVariables.unset(\"alertId\");",
+                  "pm.collectionVariables.unset(\"noticeId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code===201){const s=pm.response.json();pm.collectionVariables.set(\"tokenA\",s.token);pm.collectionVariables.set(\"accountA\",s.accountId);pm.collectionVariables.set(\"referenceA\",s.profile.id);}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "P02 Registrar usuario B",
+          "id": "498641e8-9a76-5acf-a52f-12ac35c6790d",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{baseUrl}}/authentication/sign-up",
+            "description": "Registrar cuenta de prueba B; el token y sus identificadores se guardan automáticamente. No fotografiar la respuesta de registro porque incluye el JWT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sprint 3 Usuario B\",\n  \"email\": \"sprint3.b.{{runId}}@example.com\",\n  \"password\": \"Sprint3Local2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code===201){const s=pm.response.json();pm.collectionVariables.set(\"tokenB\",s.token);pm.collectionVariables.set(\"accountB\",s.accountId);pm.collectionVariables.set(\"referenceB\",s.profile.id);}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "P03 Registrar usuario C",
+          "id": "7fa5a54f-464d-5e24-add0-87198d6d9f94",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{baseUrl}}/authentication/sign-up",
+            "description": "Registrar cuenta de prueba C; el token y sus identificadores se guardan automáticamente. No fotografiar la respuesta de registro porque incluye el JWT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sprint 3 Usuario C\",\n  \"email\": \"sprint3.c.{{runId}}@example.com\",\n  \"password\": \"Sprint3Local2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code===201){const s=pm.response.json();pm.collectionVariables.set(\"tokenC\",s.token);pm.collectionVariables.set(\"accountC\",s.accountId);pm.collectionVariables.set(\"referenceC\",s.profile.id);}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 - Incidents (I01 a I16)",
+      "description": "Ejecutar en orden después de Preparacion. I15 elimina solamente el reporte sintético creado por I01. Para repetir toda la secuencia, ejecutar nuevamente Preparacion.",
+      "item": [
+        {
+          "name": "I01 Crear reporte",
+          "id": "659e5bd3-30a4-508c-84da-f1ab112011ed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents",
+            "description": "Crear el reporte de A; capturar Body y respuesta con id, userId, coordenadas y estado ACTIVE.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SPRINT3_POSTMAN\",\n  \"severity\": \"HIGH\",\n  \"address\": \"Ubicacion de muestra Lima\",\n  \"description\": \"Reporte sintetico para la evidencia del Sprint 3\",\n  \"latitude\": -12.0464,\n  \"longitude\": -77.0428,\n  \"timeReported\": \"{{nowIso}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"incidentId\",pm.response.json().id);",
+                  "pm.test(\"Reporte ACTIVE con propietario autenticado\",()=>pm.expect(pm.response.json().status === \"ACTIVE\" && pm.response.json().userId === Number(pm.collectionVariables.get(\"referenceA\"))).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I02 Listar reportes paginados",
+          "id": "6eb3b755-2617-55f1-a198-f922070d59e0",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents?paged=true&page=0&size=5",
+            "description": "Consultar la primera página; mostrar content, page, size y totalElements."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Respuesta paginada\",()=>pm.expect(Array.isArray(pm.response.json().content) && pm.response.json().size===5).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I03 Consultar reporte por ID",
+          "id": "b16c1f32-193e-5b62-9dee-cb563d8c6a07",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}",
+            "description": "Recuperar el ID guardado automáticamente en I01."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Mismo reporte\",()=>pm.expect(pm.response.json().id === Number(pm.collectionVariables.get(\"incidentId\"))).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I04 Filtrar reportes y coordenadas",
+          "id": "2c4a3fd9-84e2-5290-9c40-a6e173efcf65",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents?paged=true&type=SPRINT3_POSTMAN&severity=HIGH&status=ACTIVE&minLat=-13&maxLat=-11&minLng=-78&maxLng=-76&page=0&size=5",
+            "description": "En Params mostrar filtros de tipo, severidad, estado y rectángulo geográfico; la respuesta debe cumplirlos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Resultados cumplen filtros\",()=>pm.expect(pm.response.json().content.length>0 && pm.response.json().content.every(x=>x.type===\"SPRINT3_POSTMAN\" && x.severity===\"HIGH\" && x.status===\"ACTIVE\" && x.latitude>=-13 && x.latitude<=-11 && x.longitude>=-78 && x.longitude<=-76)).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I05 Rechazar coordenadas invalidas",
+          "id": "bcccf153-cd06-50a3-86ba-a8f1e0ce54d2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents",
+            "description": "Enviar latitud 100; fotografiar el Body inválido y HTTP 400.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SPRINT3_POSTMAN\",\n  \"severity\": \"HIGH\",\n  \"address\": \"Ubicacion de muestra Lima\",\n  \"description\": \"Reporte sintetico para la evidencia del Sprint 3\",\n  \"latitude\": 100,\n  \"longitude\": -77.0428,\n  \"timeReported\": \"{{nowIso}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I06 Rechazar propietario suplantado",
+          "id": "2f97854c-91a3-5e5c-b42f-9f7e94a3d5ac",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents",
+            "description": "A intenta crear un reporte con el identificador de B. Debe rechazarse con 403.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SPRINT3_POSTMAN\",\n  \"severity\": \"HIGH\",\n  \"address\": \"Ubicacion de muestra Lima\",\n  \"description\": \"Reporte sintetico para la evidencia del Sprint 3\",\n  \"latitude\": -12.0464,\n  \"longitude\": -77.0428,\n  \"timeReported\": \"{{nowIso}}\",\n  \"userId\": \"{{referenceB}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I07 Rechazar acceso sin sesion",
+          "id": "0fc70497-5385-5ca7-8077-9569ec345b8c",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{baseUrl}}/incidents",
+            "description": "No Auth ya está configurado. Demuestra autenticación obligatoria, HTTP 401."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I08 Rechazar cambio de reporte ajeno",
+          "id": "7f055670-1daa-595f-9277-34a29bde668c",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}/status",
+            "description": "B intenta modificar el reporte de A. Debe devolver 403.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I09 Resolver reporte propio",
+          "id": "a232dc6f-688d-5e0d-896e-e17fcb580be0",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}/status",
+            "description": "A cambia su reporte a RESOLVED; mostrar el JSON de entrada y salida.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado RESOLVED\",()=>pm.expect(pm.response.json().status===\"RESOLVED\").to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I10 Adjuntar evidencia PNG",
+          "id": "9d313a1e-b8bc-5c10-85a1-df145940fb16",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}/evidences",
+            "description": "Body > form-data > file: seleccionar evidencia.png si Postman solicita permiso al archivo. No agregar Content-Type manualmente. Debe responder AVAILABLE.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "files/evidencia.png",
+                  "contentType": "image/png"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"evidenceId\",pm.response.json().id);",
+                  "pm.test(\"Archivo disponible\",()=>pm.expect(pm.response.json().state===\"AVAILABLE\" && pm.response.json().content_type===\"image/png\").to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I11 Listar evidencias privadas",
+          "id": "24e77e0d-d084-582f-a617-efb7ea047d7d",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}/evidences",
+            "description": "Mostrar metadatos del archivo privado: nombre, tipo, tamaño y estado AVAILABLE."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Adjunto registrado\",()=>pm.expect(pm.response.json().some(x=>x.id===pm.collectionVariables.get(\"evidenceId\") && x.state===\"AVAILABLE\")).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I12 Descargar evidencia propia",
+          "id": "f2fb38cc-06fb-5564-aae0-fe7229c5932e",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}/evidences/{{evidenceId}}",
+            "description": "Mostrar Response > Headers con Content-Type image/png, Content-Disposition y HTTP 200. El Body es binario, no JSON; no es un error."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Imagen privada y sin cache\",()=>{pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"image/png\");pm.expect(pm.response.headers.get(\"Cache-Control\")).to.include(\"no-store\");});"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I13 Rechazar descarga ajena",
+          "id": "6cbad3f9-a758-524e-8503-78320d20e01e",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}/evidences/{{evidenceId}}",
+            "description": "B intenta descargar el adjunto privado de A; HTTP 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I14 Rechazar archivo falso",
+          "id": "cf1d75ca-c4a6-59c2-98f3-84f20e906c4e",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}/evidences",
+            "description": "El archivo de texto se declara image/png; la firma real no coincide. Mostrar form-data y HTTP 400.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "files/archivo-invalido.txt",
+                  "contentType": "image/png"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I15 Eliminar reporte propio",
+          "id": "abfa3458-3e6b-5fed-8f76-7f72972f6c9d",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}",
+            "description": "A elimina el reporte sintético. HTTP 204 sin cuerpo es correcto. Tomar la captura antes de cambiar de petición."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "I16 Confirmar reporte no disponible",
+          "id": "ec44678a-3e85-50d3-a9d7-bfff9f80eb2b",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/incidents/{{incidentId}}",
+            "description": "Consultar el ID eliminado en I15. Debe devolver 404."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Communities (C01 a C36)",
+      "description": "Ejecutar en orden. Los requests C20 y C26 usan Emergencies únicamente para provocar avisos reales en Communities. Las consultas de bandeja esperan unos segundos porque la entrega es asíncrona. Solo se eliminan comunidades sintéticas creadas aquí.",
+      "item": [
+        {
+          "name": "C01 Crear comunidad publica",
+          "id": "48c86643-a3bc-5ea3-b6e2-58703b5bf3b2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities",
+            "description": "A crea una comunidad pública. Mostrar id, ownerId, isPrivate y member.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Comunidad Sprint 3 {{runId}}\",\n  \"description\": \"Grupo publico de prueba\",\n  \"isPrivate\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"communityId\",pm.response.json().id);",
+                  "pm.test(\"Propietario y membresia\",()=>pm.expect(pm.response.json().ownerId===Number(pm.collectionVariables.get(\"referenceA\")) && pm.response.json().member===true).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C02 Listar comunidades",
+          "id": "b67b42f6-ef2b-5a8e-8ea0-3644c0f65d0c",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities?page=0&size=50",
+            "description": "Consultar las comunidades visibles para A; respuesta en lista."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Comunidad creada presente\",()=>pm.expect(pm.response.json().some(x=>x.id===Number(pm.collectionVariables.get(\"communityId\")))).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C03 Consultar comunidad por ID",
+          "id": "932b5790-76e0-5570-8965-3e3e0d90f708",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}",
+            "description": "Consultar el ID creado en C01."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"ID correcto\",()=>pm.expect(pm.response.json().id===Number(pm.collectionVariables.get(\"communityId\"))).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C04 Crear comunidad privada",
+          "id": "e0937f60-ab80-57f6-a676-67a77375eba0",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities",
+            "description": "Crear una comunidad privada de muestra.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Privada Sprint 3 {{runId}}\",\n  \"description\": \"Solo propietario en este alcance\",\n  \"isPrivate\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"privateCommunityId\",pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C05 Rechazar consulta privada ajena",
+          "id": "f6030d4f-282d-5518-b6dd-36b1ffb2a86b",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{privateCommunityId}}",
+            "description": "B no es propietario ni miembro; HTTP 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C06 Rechazar apoyo sin membresia",
+          "id": "c170ef44-68a5-5af7-8123-f65edff0eefc",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}/support-requests",
+            "description": "B solicita apoyo antes de unirse. Debe recibir 403.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Intento sin membresia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C07 Unirse a comunidad publica",
+          "id": "196995f1-9d42-5842-aa46-d292326eba74",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}/members/me",
+            "description": "B se incorpora a la comunidad pública. HTTP 204 sin cuerpo."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C08 Crear solicitud de apoyo",
+          "id": "78f00812-f15d-5c11-ab77-f6d77769e6df",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}/support-requests",
+            "description": "Ahora B, como miembro, puede crear una solicitud de apoyo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Necesito apoyo vecinal: prueba del Sprint 3\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"supportId\",pm.response.json().id);",
+                  "pm.test(\"Apoyo ACTIVE\",()=>pm.expect(pm.response.json().status===\"ACTIVE\").to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C09 Consultar solicitudes de apoyo",
+          "id": "270dc1fe-c916-543e-92e4-61d008507a70",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}/support-requests",
+            "description": "A consulta las solicitudes de su comunidad; mostrar la creada por B."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Solicitud persistida\",()=>pm.expect(pm.response.json().some(x=>x.id===pm.collectionVariables.get(\"supportId\"))).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C10 Resolver solicitud de apoyo",
+          "id": "edb6f241-64f9-5946-a053-9054c616fe69",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}/support-requests/{{supportId}}/resolve",
+            "description": "El propietario A resuelve la solicitud. HTTP 204 sin cuerpo."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C11 Salir de comunidad publica",
+          "id": "34f9f65e-fc0e-5d35-978f-724d5a0668eb",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}/members/me",
+            "description": "B abandona la comunidad. El propietario A conserva su acceso."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C12 Rechazar eliminacion ajena",
+          "id": "1d8e68bd-c8e2-5f4a-ba72-991b46403750",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenC}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}",
+            "description": "C intenta eliminar la comunidad de A. Debe recibir 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C13 Invitar contacto de confianza",
+          "id": "e0fc6276-634c-529d-b400-d401d91fc73e",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/contacts",
+            "description": "A invita a B como contacto; el vínculo inicia PENDING.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"{{accountB}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"contactId\",pm.response.json().id);",
+                  "pm.test(\"Vinculo PENDING\",()=>pm.expect(pm.response.json().status===\"PENDING\").to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C14 Listar contactos",
+          "id": "3b83c6db-3bbb-56c7-ab08-f1ced10c7060",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/contacts",
+            "description": "Consultar el vínculo pendiente y los UUID de sus participantes."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Invitacion registrada\",()=>pm.expect(pm.response.json().some(x=>x.id===pm.collectionVariables.get(\"contactId\"))).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C15 Rechazar autoaceptacion",
+          "id": "caeeb193-6922-5e43-9ca7-1b439a1c07b9",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/contacts/{{contactId}}/accept",
+            "description": "A no puede aceptar su propia invitación en nombre de B; HTTP 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C16 Aceptar invitacion recibida",
+          "id": "348749c4-b653-5ddc-9e51-c2ba28bfd888",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/contacts/{{contactId}}/accept",
+            "description": "B acepta explícitamente el vínculo. HTTP 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C17 Rechazar monitoreo sin permiso",
+          "id": "4753aaa5-da25-5aab-8398-8083c322e735",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/monitoring/{{accountA}}",
+            "description": "Ser contacto aceptado no basta para monitorear: aún no hay permiso explícito; HTTP 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C18 Conceder permiso temporal",
+          "id": "75ef2258-f84e-53c1-a09e-03fc24adba2b",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/monitoring-grants",
+            "description": "A autoriza a B a consultar sus alertas activas durante una hora.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"{{accountB}}\",\n  \"scope\": \"EMERGENCY_STATUS\",\n  \"expiresAt\": \"{{grantExpires}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"grantId\",pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C19 Listar permisos",
+          "id": "11c4426e-39ef-5b49-88da-e46192618da8",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/monitoring-grants",
+            "description": "B ve el permiso recibido con propietario, destinatario, alcance y expiración."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Permiso registrado\",()=>pm.expect(pm.response.json().some(x=>x.id===pm.collectionVariables.get(\"grantId\"))).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C20 Generar alerta para probar avisos",
+          "id": "9a471c40-daaa-52c5-9b09-3275a01e9b33",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{eventKey}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/emergencies",
+            "description": "Petición auxiliar a Emergencies: genera una alerta real de A que debe llegar a la bandeja de B. No simula ni inyecta eventos internos.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"SPRINT3_POSTMAN\",\n  \"latitude\": -12.0464,\n  \"longitude\": -77.0428,\n  \"accuracyM\": 15,\n  \"locationRecordedAt\": \"{{nowIso}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set(\"eventKey\",pm.variables.replaceIn(\"{{$guid}}\"));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"alertId\",pm.response.json().id);",
+                  "pm.test(\"Alerta ACTIVE\",()=>pm.expect(pm.response.json().status===\"ACTIVE\").to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C21 Consultar aviso recibido",
+          "id": "63a26064-e50b-5c72-8191-2e469258df88",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/notifications",
+            "description": "Espera tres segundos y consulta la bandeja de B. Debe contener EmergencyAlertCreated y el alert_id de C20. Si aún no aparece, espera y repite solo C21."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "setTimeout(()=>{},3000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if(pm.response.code===200){const notices=pm.response.json();const n=notices.find(x=>x.alert_id===pm.collectionVariables.get(\"alertId\") && x.event_type===\"EmergencyAlertCreated\");pm.test(\"Aviso real recibido exactamente una vez\",()=>pm.expect(notices.filter(x=>x.alert_id===pm.collectionVariables.get(\"alertId\") && x.event_type===\"EmergencyAlertCreated\")).to.have.lengthOf(1));if(n)pm.collectionVariables.set(\"noticeId\",n.id);}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C22 Consultar monitoreo autorizado",
+          "id": "3e184b42-352f-5612-b0df-57e67072e12d",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/monitoring/{{accountA}}",
+            "description": "Con vínculo y permiso vigentes, B obtiene la alerta activa real de A."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Alerta activa autorizada\",()=>pm.expect(pm.response.json().some(x=>x.id===pm.collectionVariables.get(\"alertId\") && x.status===\"ACTIVE\")).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C23 Marcar aviso como leido",
+          "id": "20875294-3cec-55ae-9493-13dfe70fd5d7",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/notifications/{{noticeId}}/read",
+            "description": "B marca el aviso de C21 como leído. HTTP 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C24 Consultar preferencias",
+          "id": "623c0920-98a2-534a-9170-dd0ce4882f08",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/notification-preferences",
+            "description": "B consulta si está habilitada la recepción de nuevos avisos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Preferencia inicial habilitada\",()=>pm.expect(pm.response.json().enabled===true).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C25 Desactivar nuevos avisos",
+          "id": "1aa30f1d-c907-5cd0-b9b2-105be4d1aee5",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/notification-preferences",
+            "description": "B desactiva recepción de nuevas alertas. Una cancelación de una alerta ya recibida todavía debe notificarse.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C26 Cancelar alerta ya notificada",
+          "id": "edb7bb51-4f07-5f96-8abc-0d63b8669db8",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/emergencies/{{alertId}}",
+            "description": "Petición auxiliar: A cancela la alerta de C20 para comprobar el aviso de cancelación.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"CANCELLED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cancelacion persistida\",()=>pm.expect(pm.response.json().status===\"CANCELLED\").to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C27 Consultar aviso de cancelacion",
+          "id": "1813b3f7-4e0b-5f6f-93b8-28381773d833",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/notifications",
+            "description": "La bandeja debe tener EmergencyAlertCreated y EmergencyAlertCancelled para el mismo ID, pese al opt-out. El aviso original conserva read_at. Si falta la cancelación, espera y repite solo C27."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "setTimeout(()=>{},3000);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if(pm.response.code===200){const ns=pm.response.json().filter(x=>x.alert_id===pm.collectionVariables.get(\"alertId\"));pm.test(\"Creacion y cancelacion sin duplicados\",()=>{pm.expect(ns).to.have.lengthOf(2);pm.expect(ns.some(x=>x.event_type===\"EmergencyAlertCancelled\")).to.be.true;pm.expect(ns.find(x=>x.event_type===\"EmergencyAlertCreated\").read_at).not.to.equal(null);});}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C28 Revocar permiso de monitoreo",
+          "id": "fe5dbf46-09b7-5341-9e7d-319d1a70466b",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/monitoring-grants/{{grantId}}",
+            "description": "A revoca el permiso concedido en C18."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C29 Rechazar monitoreo revocado",
+          "id": "5df0ce3d-312b-5bcd-aac0-010486fc86fc",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenB}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/monitoring/{{accountA}}",
+            "description": "B ya no puede consultar las alertas de A. HTTP 403."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C30 Revocar contacto",
+          "id": "7f75d348-f0fb-50e9-ad02-a539160a1c3f",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/contacts/{{contactId}}",
+            "description": "A revoca el vínculo de confianza con B."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C31 Invitar segundo contacto",
+          "id": "49c079fa-df7c-576a-a421-1706d550ab28",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/contacts",
+            "description": "Crear otra invitación A a C para probar rechazo sin alterar la secuencia anterior.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"{{accountC}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if(pm.response.code<300) pm.collectionVariables.set(\"rejectedContactId\",pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C32 Rechazar invitacion recibida",
+          "id": "628858a6-505a-5f47-94de-d5d095a13676",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenC}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/contacts/{{rejectedContactId}}/reject",
+            "description": "C rechaza la invitación recibida; HTTP 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C33 Confirmar estados de contactos",
+          "id": "3f21247d-55a2-51cc-9ff7-95ea509c6937",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/contacts",
+            "description": "Mostrar el primer vínculo REVOKED y el segundo REJECTED."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"REVOKED y REJECTED persistidos\",()=>pm.expect(pm.response.json().some(x=>x.id===pm.collectionVariables.get(\"contactId\") && x.status===\"REVOKED\") && pm.response.json().some(x=>x.id===pm.collectionVariables.get(\"rejectedContactId\") && x.status===\"REJECTED\")).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C34 Rechazar bandeja sin sesion",
+          "id": "db2aab7d-2499-5b36-86d4-df808c755da6",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{baseUrl}}/communities/notifications",
+            "description": "No Auth ya configurado. Sin sesión no se puede consultar la bandeja; HTTP 401."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C35 Eliminar comunidad publica propia",
+          "id": "9ec514dd-dcd5-51a5-95dc-1380d1cf82de",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{communityId}}",
+            "description": "A elimina únicamente la comunidad de prueba de C01. También elimina sus solicitudes de apoyo por la FK."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "C36 Eliminar comunidad privada propia",
+          "id": "3258af61-927b-55cf-be5f-dc3308d5d3b5",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenA}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/communities/{{privateCommunityId}}",
+            "description": "A elimina la comunidad privada sintética de C04."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}
