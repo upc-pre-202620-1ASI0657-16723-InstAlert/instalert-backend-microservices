@@ -1,0 +1,1040 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "InstAlert Communities — Sprint 3",
+    "version": "1.0.0-local",
+    "description": "Contrato OpenAPI 3.1.0 del microservicio independiente. Operaciones verificadas localmente mediante Postman. JWT emitido por Account. Los ejemplos son ilustrativos: sustituir los identificadores por los obtenidos en la ejecución. No representa despliegue cloud."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8085",
+      "description": "Local Docker Gateway"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/v1/communities/{id}/support-requests/{requestId}/resolve": {
+      "put": {
+        "tags": [
+          "Membresías y apoyo"
+        ],
+        "operationId": "put_api_v1_communities_id_support_requests_requestId_resolve",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Resolver solicitud de apoyo",
+        "description": "Requiere pertenencia o propiedad. Puede resolver su solicitante, el propietario de la comunidad o un administrador con acceso."
+      }
+    },
+    "/api/v1/communities/notifications/{id}/read": {
+      "put": {
+        "tags": [
+          "Avisos y preferencias"
+        ],
+        "operationId": "put_api_v1_communities_notifications_id_read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Marcar aviso como leído",
+        "description": "Solo destinatario. Aviso ajeno o inexistente: 404. Conserva la primera fecha de lectura."
+      }
+    },
+    "/api/v1/communities/notification-preferences": {
+      "get": {
+        "tags": [
+          "Avisos y preferencias"
+        ],
+        "operationId": "get_api_v1_communities_notification_preferences",
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "enabled": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          }
+        },
+        "summary": "Consultar preferencia de avisos",
+        "description": "Cuenta autenticada. Preferencia propia; por defecto enabled=true."
+      },
+      "put": {
+        "tags": [
+          "Avisos y preferencias"
+        ],
+        "operationId": "put_api_v1_communities_notification_preferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preference"
+              },
+              "example": {
+                "enabled": true
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          }
+        },
+        "summary": "Actualizar preferencia de avisos",
+        "description": "Cuenta autenticada. enabled boolean obligatorio. Opt-out bloquea nuevas creaciones, no las cancelaciones de alertas ya recibidas."
+      }
+    },
+    "/api/v1/communities/contacts/{id}/reject": {
+      "put": {
+        "tags": [
+          "Contactos de confianza"
+        ],
+        "operationId": "put_api_v1_communities_contacts_id_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "409": {
+            "description": "Conflicto de estado o recurso no disponible."
+          }
+        },
+        "summary": "Rechazar invitación",
+        "description": "Solo destinatario de un vínculo PENDING. Una invitación no aplicable produce 409."
+      }
+    },
+    "/api/v1/communities/contacts/{id}/accept": {
+      "put": {
+        "tags": [
+          "Contactos de confianza"
+        ],
+        "operationId": "put_api_v1_communities_contacts_id_accept",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          },
+          "409": {
+            "description": "Conflicto de estado o recurso no disponible."
+          }
+        },
+        "summary": "Aceptar invitación",
+        "description": "Solo destinatario. Vínculo PENDING o ya ACCEPTED. Registra consentimiento; no permite reactivar vínculos revocados/rechazados."
+      }
+    },
+    "/api/v1/communities": {
+      "get": {
+        "tags": [
+          "Comunidades"
+        ],
+        "operationId": "get_api_v1_communities",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 5
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": 1,
+                    "name": "Comunidad Sprint 3",
+                    "description": "Grupo de prueba",
+                    "isPrivate": false,
+                    "ownerId": 1,
+                    "member": true
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          }
+        },
+        "summary": "Listar comunidades visibles",
+        "description": "Cuenta autenticada. Públicas y privadas propias o con membresía. page: 0–10000; size: 1–100. Devuelve una lista."
+      },
+      "post": {
+        "tags": [
+          "Comunidades"
+        ],
+        "operationId": "post_api_v1_communities",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Create"
+              },
+              "example": {
+                "name": "Comunidad Sprint 3",
+                "description": "Grupo de prueba",
+                "isPrivate": false
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Recurso creado.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": 1,
+                  "name": "Comunidad Sprint 3",
+                  "description": "Grupo de prueba",
+                  "isPrivate": false,
+                  "ownerId": 1,
+                  "member": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          }
+        },
+        "summary": "Crear comunidad",
+        "description": "Cuenta autenticada. El servidor asigna el propietario y su membresía. ownerId heredado solo se acepta si coincide con la sesión."
+      }
+    },
+    "/api/v1/communities/{id}/support-requests": {
+      "get": {
+        "tags": [
+          "Membresías y apoyo"
+        ],
+        "operationId": "get_api_v1_communities_id_support_requests",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "community_id": 1,
+                    "account_id": "11111111-1111-4111-8111-111111111111",
+                    "description": "Solicitud de apoyo",
+                    "status": "ACTIVE",
+                    "created_at": "2026-11-14T10:00:00Z"
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Consultar solicitudes de apoyo",
+        "description": "Miembro o propietario. page desde 0; páginas de 50 solicitudes."
+      },
+      "post": {
+        "tags": [
+          "Membresías y apoyo"
+        ],
+        "operationId": "post_api_v1_communities_id_support_requests",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Support"
+              },
+              "example": {
+                "description": "Necesito apoyo vecinal"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Recurso creado.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "11111111-1111-4111-8111-111111111111",
+                  "status": "ACTIVE"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Crear solicitud de apoyo",
+        "description": "Miembro o propietario. description obligatoria, máximo 1000 caracteres."
+      }
+    },
+    "/api/v1/communities/{id}/members/me": {
+      "post": {
+        "tags": [
+          "Membresías y apoyo"
+        ],
+        "operationId": "post_api_v1_communities_id_members_me",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Unirse a comunidad pública",
+        "description": "Cuenta autenticada. No admite incorporación libre a comunidades privadas. La incorporación repetida no duplica la membresía."
+      },
+      "delete": {
+        "tags": [
+          "Membresías y apoyo"
+        ],
+        "operationId": "delete_api_v1_communities_id_members_me",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          },
+          "409": {
+            "description": "Conflicto de estado o recurso no disponible."
+          }
+        },
+        "summary": "Salir de comunidad",
+        "description": "Elimina la membresía propia. El propietario no puede abandonar su comunidad mediante esta operación."
+      }
+    },
+    "/api/v1/communities/monitoring-grants": {
+      "get": {
+        "tags": [
+          "Monitoreo autorizado"
+        ],
+        "operationId": "get_api_v1_communities_monitoring_grants",
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "owner_account_id": "11111111-1111-4111-8111-111111111111",
+                    "recipient_account_id": "22222222-2222-4222-8222-222222222222",
+                    "scope": "EMERGENCY_STATUS",
+                    "expires_at": "2026-11-14T11:00:00Z",
+                    "revoked": 0
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          }
+        },
+        "summary": "Listar permisos propios y recibidos",
+        "description": "Cuenta autenticada. Permisos en los que participa como propietario o destinatario."
+      },
+      "post": {
+        "tags": [
+          "Monitoreo autorizado"
+        ],
+        "operationId": "post_api_v1_communities_monitoring_grants",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Grant"
+              },
+              "example": {
+                "accountId": "22222222-2222-4222-8222-222222222222",
+                "scope": "EMERGENCY_STATUS",
+                "expiresAt": "2026-11-14T11:00:00Z"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Recurso creado.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "11111111-1111-4111-8111-111111111111",
+                  "expiresAt": "2026-11-14T11:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          }
+        },
+        "summary": "Conceder permiso temporal",
+        "description": "Requiere vínculo ACCEPTED. accountId UUID, scope EMERGENCY_STATUS, expiresAt ISO futuro con máximo 24 horas. Solo comparte alertas activas, no rastreo GPS continuo."
+      }
+    },
+    "/api/v1/communities/contacts": {
+      "get": {
+        "tags": [
+          "Contactos de confianza"
+        ],
+        "operationId": "get_api_v1_communities_contacts",
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "requester": "11111111-1111-4111-8111-111111111111",
+                    "recipient": "22222222-2222-4222-8222-222222222222",
+                    "status": "PENDING"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          }
+        },
+        "summary": "Listar contactos propios",
+        "description": "Cuenta autenticada. Solo vínculos en los que participa."
+      },
+      "post": {
+        "tags": [
+          "Contactos de confianza"
+        ],
+        "operationId": "post_api_v1_communities_contacts",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Invite"
+              },
+              "example": {
+                "accountId": "22222222-2222-4222-8222-222222222222"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Recurso creado.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "11111111-1111-4111-8111-111111111111",
+                  "status": "PENDING"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          }
+        },
+        "summary": "Invitar contacto de confianza",
+        "description": "Cuenta autenticada. accountId destinatario UUID, distinto de la propia cuenta. Un vínculo existente no se duplica."
+      }
+    },
+    "/api/v1/communities/{id}": {
+      "get": {
+        "tags": [
+          "Comunidades"
+        ],
+        "operationId": "get_api_v1_communities_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": 1,
+                  "name": "Comunidad Sprint 3",
+                  "description": "Grupo de prueba",
+                  "isPrivate": false,
+                  "ownerId": 1,
+                  "member": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Consultar comunidad",
+        "description": "Pública para cuentas autenticadas; privada para propietario, miembro o administrador."
+      },
+      "delete": {
+        "tags": [
+          "Comunidades"
+        ],
+        "operationId": "delete_api_v1_communities_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Eliminar comunidad",
+        "description": "Propietario o ROLE_ADMIN. Elimina también sus membresías y solicitudes de apoyo."
+      }
+    },
+    "/api/v1/communities/notifications": {
+      "get": {
+        "tags": [
+          "Avisos y preferencias"
+        ],
+        "operationId": "get_api_v1_communities_notifications",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0,
+              "maximum": 10000,
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "event_id": "11111111-1111-4111-8111-111111111111",
+                    "alert_id": "11111111-1111-4111-8111-111111111111",
+                    "event_type": "EmergencyAlertCreated",
+                    "payload": "{\"id\": \"11111111-1111-4111-8111-111111111111\", \"accountId\": \"11111111-1111-4111-8111-111111111111\", \"status\": \"ACTIVE\", \"latitude\": -12.0464, \"longitude\": -77.0428}",
+                    "received_at": "2026-11-14T10:00:00Z",
+                    "read_at": null
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          }
+        },
+        "summary": "Consultar bandeja propia",
+        "description": "Cuenta autenticada. Solo avisos del destinatario. page: 0–10000; páginas de 50. Entrega asíncrona desde Emergencies; no se envían correos ni push."
+      }
+    },
+    "/api/v1/communities/monitoring/{accountId}": {
+      "get": {
+        "tags": [
+          "Monitoreo autorizado"
+        ],
+        "operationId": "get_api_v1_communities_monitoring_accountId",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "accountId": "11111111-1111-4111-8111-111111111111",
+                    "type": "PANIC",
+                    "status": "ACTIVE",
+                    "latitude": -12.0464,
+                    "longitude": -77.0428
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "503": {
+            "description": "Dependencia o almacenamiento temporalmente no disponible."
+          }
+        },
+        "summary": "Consultar alertas autorizadas",
+        "description": "Vínculo ACCEPTED y permiso vigente no revocado, con el solicitante como destinatario. Communities consulta Emergencies internamente; máximo 50 alertas activas."
+      }
+    },
+    "/api/v1/communities/monitoring-grants/{id}": {
+      "delete": {
+        "tags": [
+          "Monitoreo autorizado"
+        ],
+        "operationId": "delete_api_v1_communities_monitoring_grants_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Revocar permiso de monitoreo",
+        "description": "Solo propietario del permiso. Permiso ajeno o inexistente: 404."
+      }
+    },
+    "/api/v1/communities/contacts/{id}": {
+      "delete": {
+        "tags": [
+          "Contactos de confianza"
+        ],
+        "operationId": "delete_api_v1_communities_contacts_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Revocar vínculo de confianza",
+        "description": "Cualquiera de los participantes. Cambia estado a REVOKED."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Preference": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "Create": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "isPrivate": {
+            "type": "boolean"
+          },
+          "ownerId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Support": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "description"
+        ]
+      },
+      "Grant": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scope": {
+            "type": "string",
+            "pattern": "EMERGENCY_STATUS"
+          }
+        },
+        "required": [
+          "accountId",
+          "expiresAt",
+          "scope"
+        ]
+      },
+      "Invite": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "accountId"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Comunidades"
+    },
+    {
+      "name": "Membresías y apoyo"
+    },
+    {
+      "name": "Contactos de confianza"
+    },
+    {
+      "name": "Avisos y preferencias"
+    },
+    {
+      "name": "Monitoreo autorizado"
+    }
+  ]
+}
