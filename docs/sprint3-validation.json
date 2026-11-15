@@ -1,0 +1,150 @@
+{
+  "backend": {
+    "IncidentsIntegrationTest": 6,
+    "EvidenceRecoveryTest": 4,
+    "IncidentsBehaviorTest": 3,
+    "CommunitiesIntegrationTest": 6,
+    "CommunitiesBehaviorTest": 3,
+    "GatewayIntegrationTest": 5,
+    "AccountIntegrationAndBDD": 13,
+    "EmergenciesIntegrationAndBDD": 12
+  },
+  "frontend": {
+    "Sprint3Transport": 5,
+    "AccountRegression": 8,
+    "EmergenciesRegression": 8
+  },
+  "realDocker": {
+    "checkedAt": "2026-11-14T22:42:11.231328+00:00",
+    "target": "http://127.0.0.1:4201/api/v1",
+    "passed": 29,
+    "checks": [
+      "Anonymous incidents rejected",
+      "Incident created in independent service",
+      "Client cannot impersonate incident owner",
+      "Invalid report coordinates rejected",
+      "Filtered report pagination",
+      "Foreign report modification rejected",
+      "Multipart evidence crosses Nginx and Gateway",
+      "Stored evidence bytes preserved",
+      "Private evidence protected",
+      "Owner resolves incident",
+      "Community created in own database",
+      "Private community access rejected",
+      "Support requires membership",
+      "Public community membership persisted",
+      "Community support query",
+      "Community owner resolves request",
+      "Accepted contact alone cannot monitor",
+      "Emergency creation reaches extracted Communities inbox",
+      "Explicit consent resolves real Emergency state",
+      "Gateway blocks internal monitoring",
+      "Monitoring revocation applied immediately",
+      "Emergency cancellation delivered",
+      "Receiver outage retains PENDING event",
+      "Recovery delivers exactly one notice",
+      "Recovered outbox event acknowledged PUBLISHED",
+      "Independent service data survives restart",
+      "Evidence volume survives restart",
+      "Foreign community deletion denied",
+      "Owner report deletion hides resource"
+    ]
+  },
+  "migration": {
+    "scope": "Existing Docker monolith database; native MySQL was not modified",
+    "counts": {
+      "checkedAt": "2026-11-14T09:18:12.400640+00:00",
+      "tables": [
+        {
+          "table": "incidents",
+          "sourceCount": 0,
+          "targetCount": 0
+        },
+        {
+          "table": "communities",
+          "sourceCount": 0,
+          "targetCount": 0
+        },
+        {
+          "table": "notification_contacts",
+          "sourceCount": 1,
+          "targetCount": 1
+        },
+        {
+          "table": "community_notification_preferences",
+          "sourceCount": 1,
+          "targetCount": 1
+        },
+        {
+          "table": "community_processed_alert_events",
+          "sourceCount": 3,
+          "targetCount": 3
+        },
+        {
+          "table": "community_alert_recipients",
+          "sourceCount": 2,
+          "targetCount": 2
+        },
+        {
+          "table": "community_alert_inbox",
+          "sourceCount": 3,
+          "targetCount": 3
+        }
+      ]
+    }
+  },
+  "postman": {
+    "requests": 55,
+    "assertions": 78,
+    "failed": 0,
+    "scope": "Local Docker; no cloud reporting"
+  },
+  "localReadLoad": {
+    "checkedAt": "2026-11-14T22:42:12.074829+00:00",
+    "target": "http://127.0.0.1:4201/api/v1",
+    "requests": 24,
+    "concurrency": 4,
+    "failed": 0,
+    "elapsedSeconds": 0.475,
+    "p95Milliseconds": 108.76,
+    "maxMilliseconds": 115.04,
+    "thresholdP95Milliseconds": 5000,
+    "passed": true,
+    "scope": "Local read-only smoke load; synthetic user; no production scalability claim"
+  },
+  "restoreRehearsal": {
+    "checkedAt": "2026-11-14T22:42:31.272215+00:00",
+    "scope": "Snapshot restore in disposable schemas; existing source data preserved; no legacy route rollback",
+    "checks": [
+      {
+        "database": "instalert_incidents",
+        "tablesCompared": 3,
+        "restoredRowsMatch": true
+      },
+      {
+        "database": "instalert_communities",
+        "tablesCompared": 10,
+        "restoredRowsMatch": true
+      },
+      {
+        "evidenceFilesCompared": 6,
+        "restoredBytesMatch": true
+      }
+    ],
+    "passed": true
+  },
+  "swagger": [
+    {
+      "service": "incidents",
+      "assets": true,
+      "contract": true,
+      "anonymousProxyStatus": 401
+    },
+    {
+      "service": "communities",
+      "assets": true,
+      "contract": true,
+      "anonymousProxyStatus": 401
+    }
+  ]
+}

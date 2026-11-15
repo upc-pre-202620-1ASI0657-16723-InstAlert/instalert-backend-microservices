@@ -1,0 +1,752 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "InstAlert Incidents — Sprint 3",
+    "version": "1.0.0-local",
+    "description": "Contrato OpenAPI 3.1.0 del microservicio independiente. Operaciones verificadas localmente mediante Postman. JWT emitido por Account. Los ejemplos son ilustrativos: sustituir los identificadores por los obtenidos en la ejecución. No representa despliegue cloud."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8085",
+      "description": "Local Docker Gateway"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Reportes"
+    },
+    {
+      "name": "Evidencias"
+    }
+  ],
+  "paths": {
+    "/api/v1/incidents/{id}/status": {
+      "put": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "put_api_v1_incidents_id_status",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/State"
+              },
+              "example": {
+                "status": "RESOLVED"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": 1,
+                  "userId": 1,
+                  "type": "SPRINT3_POSTMAN",
+                  "severity": "HIGH",
+                  "address": "Ubicacion de muestra Lima",
+                  "description": "Reporte de prueba",
+                  "status": "RESOLVED",
+                  "latitude": -12.0464,
+                  "longitude": -77.0428,
+                  "timeReported": "2026-11-14T10:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Cambiar estado del reporte",
+        "description": "Propietario o ROLE_ADMIN. Estados permitidos: ACTIVE, RESOLVED, CLOSED."
+      }
+    },
+    "/api/v1/incidents": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "get_api_v1_incidents",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "minLat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "maxLat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "minLng",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "maxLng",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 5
+          },
+          {
+            "name": "paged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "example": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "content": [
+                    {
+                      "id": 1,
+                      "userId": 1,
+                      "type": "SPRINT3_POSTMAN",
+                      "severity": "HIGH",
+                      "address": "Ubicacion de muestra Lima",
+                      "description": "Reporte de prueba",
+                      "status": "ACTIVE",
+                      "latitude": -12.0464,
+                      "longitude": -77.0428,
+                      "timeReported": "2026-11-14T10:00:00Z"
+                    }
+                  ],
+                  "page": 0,
+                  "size": 5,
+                  "totalElements": 1,
+                  "totalPages": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          }
+        },
+        "summary": "Listar y filtrar reportes",
+        "description": "Cuenta autenticada. paged=false devuelve una lista; paged=true devuelve content y metadatos. size: 1–100; page: 0–10000. from/to son fechas ISO. Los cuatro límites geográficos deben enviarse juntos."
+      },
+      "post": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "post_api_v1_incidents",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Create"
+              },
+              "example": {
+                "type": "SPRINT3_POSTMAN",
+                "severity": "HIGH",
+                "address": "Ubicacion de muestra Lima",
+                "description": "Reporte de prueba",
+                "latitude": -12.0464,
+                "longitude": -77.0428,
+                "timeReported": "2026-11-14T10:00:00Z"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Recurso creado.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": 1,
+                  "userId": 1,
+                  "type": "SPRINT3_POSTMAN",
+                  "severity": "HIGH",
+                  "address": "Ubicacion de muestra Lima",
+                  "description": "Reporte de prueba",
+                  "status": "ACTIVE",
+                  "latitude": -12.0464,
+                  "longitude": -77.0428,
+                  "timeReported": "2026-11-14T10:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          }
+        },
+        "summary": "Crear reporte",
+        "description": "Cuenta autenticada. El propietario se obtiene de Account. userId heredado es opcional y solo se acepta si coincide con la sesión."
+      }
+    },
+    "/api/v1/incidents/{incidentId}/evidences": {
+      "get": {
+        "tags": [
+          "Evidencias"
+        ],
+        "operationId": "get_api_v1_incidents_incidentId_evidences",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "id": "11111111-1111-4111-8111-111111111111",
+                    "original_name": "evidencia.png",
+                    "content_type": "image/png",
+                    "byte_size": 68,
+                    "state": "AVAILABLE"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Listar evidencias privadas",
+        "description": "Propietario o ROLE_ADMIN. Devuelve metadatos, no el contenido del archivo."
+      },
+      "post": {
+        "tags": [
+          "Evidencias"
+        ],
+        "operationId": "post_api_v1_incidents_incidentId_evidences",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recurso creado.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "11111111-1111-4111-8111-111111111111",
+                  "original_name": "evidencia.png",
+                  "content_type": "image/png",
+                  "byte_size": 68,
+                  "state": "AVAILABLE"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos o parámetros inválidos."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          },
+          "413": {
+            "description": "Solicitud multipart excede el límite."
+          },
+          "503": {
+            "description": "Dependencia o almacenamiento temporalmente no disponible."
+          }
+        },
+        "summary": "Adjuntar evidencia",
+        "description": "Propietario o ROLE_ADMIN. multipart/form-data con file obligatorio. PNG/JPEG/PDF, máximo 5 MB, firma y tipo compatibles. Estado AVAILABLE tras guardar en almacenamiento privado."
+      }
+    },
+    "/api/v1/incidents/{incidentId}/evidences/{id}": {
+      "get": {
+        "tags": [
+          "Evidencias"
+        ],
+        "operationId": "get_api_v1_incidents_incidentId_evidences_id",
+        "parameters": [
+          {
+            "name": "incidentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment; filename=\"evidence-UUID\""
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store"
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          },
+          "409": {
+            "description": "Conflicto de estado o recurso no disponible."
+          },
+          "503": {
+            "description": "Dependencia o almacenamiento temporalmente no disponible."
+          }
+        },
+        "summary": "Descargar evidencia privada",
+        "description": "Propietario o ROLE_ADMIN. Devuelve bytes con Content-Disposition attachment y Cache-Control no-store."
+      }
+    },
+    "/api/v1/incidents/{id}": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "get_api_v1_incidents_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Consulta u operación completada.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": 1,
+                  "userId": 1,
+                  "type": "SPRINT3_POSTMAN",
+                  "severity": "HIGH",
+                  "address": "Ubicacion de muestra Lima",
+                  "description": "Reporte de prueba",
+                  "status": "ACTIVE",
+                  "latitude": -12.0464,
+                  "longitude": -77.0428,
+                  "timeReported": "2026-11-14T10:00:00Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Consultar reporte por ID",
+        "description": "Cuenta autenticada. Devuelve un reporte no eliminado."
+      },
+      "delete": {
+        "tags": [
+          "Reportes"
+        ],
+        "operationId": "delete_api_v1_incidents_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Operación completada sin cuerpo de respuesta."
+          },
+          "401": {
+            "description": "Sesión ausente o inválida."
+          },
+          "403": {
+            "description": "Cuenta autenticada sin permiso para esta operación."
+          },
+          "404": {
+            "description": "Recurso no encontrado o no accesible mediante esta operación."
+          }
+        },
+        "summary": "Eliminar reporte",
+        "description": "Propietario o ROLE_ADMIN. Eliminación lógica: el reporte deja de aparecer en consultas."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "State": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "pattern": "ACTIVE|RESOLVED|CLOSED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "IncidentResponse": {
+        "type": "object",
+        "description": "Incident information response",
+        "example": {
+          "id": 1,
+          "userId": 101,
+          "type": "Robbery",
+          "severity": "HIGH",
+          "address": "Jr. Moquegua 240",
+          "description": "Two armed suspects assaulted a pedestrian",
+          "status": "ACTIVE",
+          "latitude": -12.121,
+          "longitude": -77.029,
+          "timeReported": "2025-05-20T14:32:00.000Z"
+        },
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Incident unique identifier",
+            "example": 1
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "User unique identifier",
+            "example": 101
+          },
+          "type": {
+            "type": "string",
+            "description": "Incident type",
+            "example": "Robbery"
+          },
+          "severity": {
+            "type": "string",
+            "description": "Incident severity level",
+            "example": "HIGH"
+          },
+          "address": {
+            "type": "string",
+            "description": "Incident address",
+            "example": "Jr. Moquegua 240"
+          },
+          "description": {
+            "type": "string",
+            "description": "Incident description",
+            "example": "Two armed suspects assaulted a pedestrian"
+          },
+          "status": {
+            "type": "string",
+            "description": "Incident current status",
+            "example": "ACTIVE"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Latitude coordinate",
+            "example": -12.121
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "description": "Longitude coordinate",
+            "example": -77.029
+          },
+          "timeReported": {
+            "type": "string",
+            "description": "Incident report timestamp",
+            "example": "2025-05-20T14:32:00.000Z"
+          }
+        }
+      },
+      "Create": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0
+          },
+          "severity": {
+            "type": "string",
+            "pattern": "HIGH|MEDIUM|LOW|CRITICAL"
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 0
+          },
+          "status": {
+            "type": "string",
+            "pattern": "ACTIVE"
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "maximum": 90,
+            "minimum": -90
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "maximum": 180,
+            "minimum": -180
+          },
+          "timeReported": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "address",
+          "description",
+          "latitude",
+          "longitude",
+          "timeReported",
+          "type"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
