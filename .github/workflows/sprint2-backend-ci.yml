@@ -1,0 +1,65 @@
+name: Sprint 2 Backend CI - Subsanacion
+
+on:
+  push:
+    branches: [hotfix/sprint2-ci-subsanacion]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sprint2-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify ${{ matrix.module.name }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - name: Emergencies
+            pom: services/ms-emergencies/pom.xml
+            target: services/ms-emergencies/target
+          - name: Gateway
+            pom: services/api-gateway/pom.xml
+            target: services/api-gateway/target
+          - name: Monolith-Communities
+            pom: pom.xml
+            target: target
+          - name: Account-regression
+            pom: services/ms-account/pom.xml
+            target: services/ms-account/target
+    steps:
+      - name: Checkout Sprint 2 subsanacion
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Record historical baseline
+        run: |
+          git merge-base --is-ancestor 32592e3a239cb903ba1aa62e51e853d85d83f083 HEAD
+          git diff --exit-code 32592e3a239cb903ba1aa62e51e853d85d83f083 HEAD -- src services scripts pom.xml mvnw .mvn
+          echo "Application code: Sprint 2 closure 32592e3. CI added later as subsanacion." >> "$GITHUB_STEP_SUMMARY"
+      - name: Set up Java 21
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: ${{ matrix.module.pom }}
+      - name: Test and package Sprint 2
+        run: bash ./mvnw --batch-mode --no-transfer-progress -f ${{ matrix.module.pom }} verify
+      - name: Save reports and JAR
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: sprint2-backend-${{ matrix.module.name }}
+          path: |
+            ${{ matrix.module.target }}/surefire-reports/
+            ${{ matrix.module.target }}/cucumber.json
+            ${{ matrix.module.target }}/*.jar
+          if-no-files-found: warn
+          retention-days: 30

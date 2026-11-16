@@ -1,0 +1,18 @@
+Subsanacion de evidencia de integracion continua del Sprint 2.
+
+Codigo base: 32592e3a239cb903ba1aa62e51e853d85d83f083, cierre del 31/10/2026.
+La configuracion CI se incorpora posteriormente, con su fecha real.
+La rama hotfix/sprint2-ci-subsanacion conserva el codigo funcional historico.
+Cada trabajo comprueba que src, services, scripts, pom.xml y Maven Wrapper
+no difieren del commit de cierre antes de ejecutar las pruebas.
+
+Maven verify con Java 21 prueba y empaqueta Emergencies, Gateway, el monolito
+con Communities y Account como regresion. Las suites usan H2 y sus dobles
+de contrato; no requieren bases ni credenciales de produccion.
+Los informes y JAR se conservan como artefactos durante 30 dias.
+
+Esta ejecucion posterior no se presenta como CI existente durante la entrega
+original del Sprint 2. No se despliega publicamente la aplicacion, no se
+publican imagenes y no se ejecuta el entorno Docker Compose completo.
+Las 21 comprobaciones locales Docker siguen siendo evidencia separada.
+No integrar esta rama historica sobre main/develop del Sprint 3.
